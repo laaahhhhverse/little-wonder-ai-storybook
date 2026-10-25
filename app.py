@@ -20,7 +20,16 @@ div[data-testid="stVerticalBlockBorderWrapper"] {background:rgba(255,255,255,.78
 </style>
 """, unsafe_allow_html=True)
 
-cover_path = os.path.join(os.path.dirname(__file__), "assets", "storybook_cover.png")
+# Resolve the cover relative to this file so deployment works from the repository root.
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+cover_path = os.path.join(BASE_DIR, "assets", "storybook_cover.png")
+
+# Keep the app usable even if the optional cover image is missing in a deployment.
+def show_cover():
+    if os.path.isfile(cover_path):
+        st.image(cover_path, use_container_width=True)
+    else:
+        st.info("Sample cover image is not included yet. Add assets/storybook_cover.png to the repository.")
 
 st.markdown('<div class="hero"><h1>📚 Little Wonder</h1><p>Your imagination, turned into a storybook.</p></div>', unsafe_allow_html=True)
 st.write("Create a gentle, child-friendly adventure with a character, a setting, and a little lesson.")
@@ -101,7 +110,7 @@ if st.session_state.story is None:
         st.write("Choose your character and story idea in the sidebar, then press **Create my story**.")
         st.info("The included sample illustration is original artwork created for this project. Demo stories are generated from templates, so no API key is needed.")
     with right:
-        st.image(cover_path, use_container_width=True)
+        show_cover()
 else:
     left, right = st.columns([1.15, .85], gap="large")
     with left:
@@ -110,10 +119,11 @@ else:
         st.download_button("⬇️ Download story (.md)", st.session_state.story, file_name="little_wonder_story.md", mime="text/markdown")
     with right:
         st.subheader("🎨 Storybook illustration")
-        st.image(cover_path, use_container_width=True)
+        show_cover()
         st.caption("Sample cover illustration. The story and cover are starter assets; connect an image-generation API later for scene-specific artwork.")
-        with open(cover_path, "rb") as f:
-            st.download_button("⬇️ Download illustration (.png)", f.read(), file_name="little_wonder_cover.png", mime="image/png")
+        if os.path.isfile(cover_path):
+            with open(cover_path, "rb") as f:
+                st.download_button("⬇️ Download illustration (.png)", f.read(), file_name="little_wonder_cover.png", mime="image/png")
 
 st.divider()
 st.caption("Little Wonder • Beginner-friendly Python project • Please review stories before sharing them with children.")
